@@ -1,6 +1,8 @@
 from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 
+from apiv1 import api_v1_router
+
 app = FastAPI()
 
 # tempovarily add all origins
@@ -21,3 +23,6 @@ def entry_point():
 @app.get("/healthz")
 def healthz():
     return "ok"
+
+# add router
+app.include_router(api_v1_router)
