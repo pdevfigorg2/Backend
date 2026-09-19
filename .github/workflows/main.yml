@@ -27,8 +27,8 @@ jobs:
               with:
                 push: true
                 tags: pdevfig/backend-temp:${{ github.sha }}
-                cache-from: target=registry,ref=pdevfig/backend-temp:devcache
-                cache-to: target=registry,ref=pdevfig/backend-temp:dev,mode=max
+                cache-from: type=registry,ref=pdevfig/backend-temp:devcache
+                cache-to: type=registry,ref=pdevfig/backend-temp:devcache,mode=max
 
             - name: Summary message
               run: echo "Image pushed successfully as pdevfig/backend-temp:${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
