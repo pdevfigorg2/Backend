@@ -29,6 +29,10 @@ jobs:
                 tags: pdevfig/backend-temp:${{ github.sha }}
                 cache-from: target=registry,ref=pdevfig/backend-temp:devcache
                 cache-to: target=registry,ref=pdevfig/backend-temp:dev,mode=max
+
+            - name: Summary message
+              run: echo "Image pushed successfully as pdevfig/backend-temp:${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+
     update_helm:
         runs-on: ubuntu-latest
         steps:
@@ -56,6 +60,7 @@ jobs:
                 git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
                 git add .
+
                 if git diff --cached --quite; then
                   echo "No changes"
                   exit 0
@@ -63,6 +68,6 @@ jobs:
 
                 git commit -m "bot: Update backend image tag to ${{ github.sha }}"
 
-                git push -u origin feature/helm-charts
+                git push 
 
-                echo "## Succcessfull updated backend tag ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+                echo "Succcessfull updated backend tag ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
