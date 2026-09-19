@@ -1,7 +1,10 @@
 name: Build and push
 
 on:
-    workflow_dispatch
+    workflow_dispatch:
+    push:
+        branches:
+            - develop
 
 permissions:
     contents: read
