@@ -1,0 +1,68 @@
+name: Build and push
+
+on:
+    workflow_dispatch
+
+permissions:
+    contents: read
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: login to docker hub
+              uses: docker/login-action@v4
+              with:
+                username: ${{ vars.DOCKER_USERNAME }}
+                password: ${{ secrets.DOCKER_PASSWORD }}
+
+            - name: setup buildx
+              uses: docker/setup-buildx-action@v4
+            
+            - name: Build and push
+              uses: docker/build-push-action@v7
+              with:
+                push: true
+                tags: pdevfig/backend-temp:${{ github.sha }}
+                cache-from: target=registry,ref=pdevfig/backend-temp:devcache
+                cache-to: target=registry,ref=pdevfig/backend-temp:dev,mode=max
+    update_helm:
+        runs-on: ubuntu-latest
+        steps:
+            - name: checkout ops
+              uses: actions/checkout@v4
+              with:
+                repository: pdevfigorg2/ops
+                path: ops
+                ref: "feature/helm-charts"
+                token: ${{ secrets.OPS_REPO_TOKEN }}
+
+            - name: setup uv
+              uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4
+              with:
+                version: 0.12.13
+
+            - name: change tag value
+              working-directory: ops
+              run: uvx pdev-pj1-yaml-tool --backend-image-tag-value ${{ github.sha }} --file ./project1/dev_values.yaml
+
+            - name: commit and push
+              working-directory: ops
+              run: |
+                git config user.name "github-actions[bot]"
+                git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+                git add .
+                if git diff --cached --quite; then
+                  echo "No changes"
+                  exit 0
+                fi
+
+                git commit -m "bot: Update backend image tag to ${{ github.sha }}"
+
+                git push -u origin feature/helm-charts
+
+                echo "## Succcessfull updated backend tag ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
